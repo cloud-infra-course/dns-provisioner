@@ -1,6 +1,4 @@
-import remove from 'lodash.remove'
 import { verifyIdToken } from './oauth'
-import { type DnsRecordsBrowseResponse } from 'cloudflare'
 
 interface Env {
   GOOGLE_CLIENT_ID: string
@@ -12,6 +10,19 @@ interface Env {
 
 interface ProvisionerInput {
   nameservers: string[]
+}
+
+interface DnsResult {
+  content: string
+  name: string
+  type: string
+  id: string
+}
+
+interface DnsListResponse {
+  success: boolean
+  errors: any[]
+  result: DnsResult[]
 }
 
 function isProvisionerInput (data: unknown): data is ProvisionerInput {
@@ -105,7 +116,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
 
   const response = await fetch(
-    `https://api.cloudflare.com/client/v4/zones/${context.env.CLOUDFLARE_ZONE_ID}/dns_records?name=${sunet}&type=NS`, {
+    `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records?name=${sunet}.infracourse.cloud&type=NS`, {
       headers: {
         Authorization: `Bearer ${context.env.CLOUDFLARE_TOKEN}`,
         'X-Auth-Email': context.env.CLOUDFLARE_EMAIL,
@@ -114,13 +125,26 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     },
   )
 
-  const records: DnsRecordsBrowseResponse<'NS'> = await response.json()
+  const records: DnsListResponse = await response.json()
   let statusCode = 201
 
-  // don't change any existing records that are in the submitted set
   if (records.result !== null) {
     for (const record of records.result) {
-      remove(input.nameservers, ns => ns === record.content)
+      const deleteResponse = await fetch(
+        `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records/${record.id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${context.env.CLOUDFLARE_TOKEN}`,
+            'X-Auth-Email': context.env.CLOUDFLARE_EMAIL,
+            'X-Auth-Key': context.env.CLOUDFLARE_KEY,
+          },
+        },
+      )
+
+      if (!deleteResponse.ok) {
+        return new Response(null, { status: 500, statusText: 'Internal server error' })
+      }
     }
     statusCode = 204
   }
