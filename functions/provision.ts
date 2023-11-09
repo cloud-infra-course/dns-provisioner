@@ -48,11 +48,16 @@ async function authenticate (context: EventContext<Env, any, Record<string, unkn
     waitUntil: context.waitUntil,
   })
 
-  if (typeof payload.email !== 'string') {
+  if (typeof payload.email !== 'string' || typeof payload.hd !== 'string') {
     return null
   }
 
-  return payload.email.split('@')[0]
+  const [username, domain] = payload.email.split('@')
+  if (payload.hd !== 'stanford.edu' || domain !== 'stanford.edu') {
+    return null
+  }
+
+  return username
 }
 
 async function createRecords (env: Env, zoneId: string, sunet: string, nameservers: string[]): Promise<void> {
