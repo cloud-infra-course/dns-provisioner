@@ -19,6 +19,10 @@ interface CacheVal {
   expires: number
 }
 
+interface CanvasUser {
+  login_id: string
+}
+
 /**
  * Imports a public key for the provided Google Cloud (GCP)
  * service account credentials.
@@ -117,4 +121,26 @@ export async function verifyIdToken (options: VerifyIdTokenOptions): Promise<JWT
     throw new Error('Unexpected "auth_time" claim value')
   }
   return payload
+}
+
+export async function verifyUserInCanvasCourse(courseId: string, loginId: string, apiKey: string): Promise<boolean> {
+  const response = await fetch(
+    `https://canvas.stanford.edu/api/v1/courses/${courseId}/search_users?` + new URLSearchParams({
+      search_term: loginId,
+    }),
+    {
+      headers: {
+        Authorization: `Bearer ${apiKey}`
+      }
+    }
+  )
+
+  const users: CanvasUser[] = await response.json()
+  for (const user of users) {
+    if (user.login_id == loginId) {
+      return true
+    }
+  }
+
+  return false
 }

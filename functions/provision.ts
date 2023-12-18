@@ -1,4 +1,4 @@
-import { verifyIdToken } from './oauth'
+import { verifyIdToken, verifyUserInCanvasCourse } from './auth'
 
 interface Env {
   GOOGLE_CLIENT_ID: string
@@ -6,6 +6,8 @@ interface Env {
   CLOUDFLARE_KEY: string
   CLOUDFLARE_TOKEN: string
   CLOUDFLARE_ZONE_ID: string
+  CANVAS_API_TOKEN: string
+  CANVAS_COURSE_ID: string
 }
 
 interface ProvisionerInput {
@@ -65,6 +67,10 @@ async function authenticate (context: EventContext<Env, any, Record<string, unkn
 
   const [username, domain] = payload.email.split('@')
   if (payload.hd !== 'stanford.edu' || domain !== 'stanford.edu') {
+    return null
+  }
+
+  if (!await verifyUserInCanvasCourse(context.env.CANVAS_COURSE_ID, username, context.env.CANVAS_API_TOKEN)) {
     return null
   }
 
