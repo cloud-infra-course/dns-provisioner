@@ -1,4 +1,4 @@
-import { verifyIdToken, verifyUserInCanvasCourse } from './auth'
+import { verifyIdToken, verifyUserInCanvasCourse } from '../auth'
 
 interface Env {
   GOOGLE_CLIENT_ID: string
@@ -11,7 +11,7 @@ interface Env {
 }
 
 interface ProvisionerInput {
-  nameservers: string[]
+  ip: string
 }
 
 interface DnsResult {
@@ -29,15 +29,13 @@ interface DnsListResponse {
 
 function isProvisionerInput (data: unknown): data is ProvisionerInput {
   const test = data as ProvisionerInput
-  if (test.nameservers === undefined) {
+  if (test.ip === undefined) {
     return false
   }
 
-  const awsNsRegex: RegExp = /^ns-(?:[0-9]|[1-9][0-9]|[1-9][0-9]{2}|1[0-9]{3}|20[0-3][0-9]|204[0-7]).awsdns-(?:0[0-9]|[1-5][0-9]|6[0-3])?.(?:com|net|org|co.uk)(?:.)?$/
-  for (const ns of test.nameservers) {
-    if (!awsNsRegex.test(ns)) {
+  const ipv4Regex: RegExp = /^((?:[0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])[.]){3}(?:[0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$/
+  if (!ipv4Regex.test(test.ip)) {
       return false
-    }
   }
 
   return true
@@ -77,25 +75,23 @@ async function authenticate (context: EventContext<Env, any, Record<string, unkn
   return username
 }
 
-async function createRecords (env: Env, zoneId: string, sunet: string, nameservers: string[]): Promise<void> {
-  for (const ns of nameservers) {
-    await fetch(
-      `https://api.cloudflare.com/client/v4/zones/${env.CLOUDFLARE_ZONE_ID}/dns_records`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${env.CLOUDFLARE_TOKEN}`,
-          'X-Auth-Email': env.CLOUDFLARE_EMAIL,
-          'X-Auth-Key': env.CLOUDFLARE_KEY,
-        },
-        body: JSON.stringify({
-          type: 'NS',
-          name: sunet,
-          content: ns,
-        }),
+async function createRecords (env: Env, zoneId: string, sunet: string, ip: string): Promise<void> {
+  await fetch(
+    `https://api.cloudflare.com/client/v4/zones/${env.CLOUDFLARE_ZONE_ID}/dns_records`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.CLOUDFLARE_TOKEN}`,
+        'X-Auth-Email': env.CLOUDFLARE_EMAIL,
+        'X-Auth-Key': env.CLOUDFLARE_KEY,
       },
-    )
-  }
+      body: JSON.stringify({
+        type: 'A',
+        name: `a1.${sunet}`,
+        content: ip,
+      }),
+    },
+  )
 }
 
 export const onRequest: PagesFunction<Env> = async (context) => {
@@ -122,7 +118,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
 
   const response = await fetch(
-    `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records?name=${sunet}.infracourse.cloud&type=NS`, {
+    `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records?name=${sunet}.infracourse.cloud&type=A`, {
       headers: {
         Authorization: `Bearer ${context.env.CLOUDFLARE_TOKEN}`,
         'X-Auth-Email': context.env.CLOUDFLARE_EMAIL,
@@ -155,7 +151,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     statusCode = 204
   }
 
-  await createRecords(context.env, zoneId, sunet, input.nameservers)
+  await createRecords(context.env, zoneId, sunet, input.ip)
 
   return new Response(null, { status: statusCode })
 }
