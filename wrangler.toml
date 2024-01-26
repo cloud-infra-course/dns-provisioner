@@ -1,1 +1,4 @@
 compatibility_flags = [ "nodejs_compat" ]
+kv_namespaces = [
+  { binding = "CREDITS_KV", id = "13b2aa64701f4e6ab272b1544a8dca0e" }
+]
