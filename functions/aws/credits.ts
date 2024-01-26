@@ -60,8 +60,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return new Response(null, { status: 403, statusText: 'Unauthorized' })
   }
 
-  console.log(await context.env.CREDITS_KV.list())
-
   const creditCode = await context.env.CREDITS_KV.get(sunet)
   if (creditCode === null) {
       return new Response(null, { status: 404, statusText: 'Not found' })

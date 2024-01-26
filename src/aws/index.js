@@ -39,6 +39,8 @@ function provisionNameServers () {
         errorText = "Something went wrong."
       } else if (response.status === 403) {
         errorText = "Unauthorized. Please check that you're signing in with a Stanford Google account."
+      } else if (response.status === 404) {
+        errorText = "Could not find your credit code. Please contact the instructors."
       } else if (response.status === 500) {
         errorText = "Internal server error. Try again later or contact the instructors if this continues."
       } else if (response.status === 501) {
