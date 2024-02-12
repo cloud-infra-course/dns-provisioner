@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="content-security-policy"
+    content="script-src 'self' https://accounts.google.com https://cdn.tailwindcss.com">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <script src="https://accounts.google.com/gsi/client" async></script>
+</head>
+
+<body>
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <!-- We've used 3xl here, but feel free to try other max-widths based on your needs -->
+    <div class="mx-auto max-w-3xl">
+      <div class="bg-white px-6 py-12 sm:py-24 lg:px-8">
+        <div class="mx-auto max-w-2xl text-center">
+          <h2 class="mt-2 text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+            Assignment 3 Request Generator
+          </h2>
+          <p class="mt-6 text-lg leading-8 text-gray-600">First, log in using your Stanford Google account. Then, click
+            submit to make a request to your Yoctogram deployment.</p>
+        </div>
+      </div>
+      <div class="overflow-hidden rounded-lg bg-white">
+        <div class="px-4 py-5 sm:p-6 mx-auto">
+          <div id="popup" class="fixed z-50 top-0 left-0 w-full h-full flex items-center justify-center hidden">
+            <div class="absolute w-96 p-4 mx-auto bg-white rounded-lg shadow-lg">
+              <div class="mb-4 text-center">
+                <span id="popupTitle" class="font-bold text-xl text-gray-800"></span>
+              </div>
+              <div id="popupContent" class="text-gray-700"></div>
+              <div class="mt-4 flex justify-center">
+                <button id="popupClose"
+                  class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="overflow-hidden rounded-lg bg-white">
+          <div class="px-4 py-5 sm:p-6 w-64 mx-auto">
+            <div id="g_id_onload"
+              data-client_id="423685727031-p79n0gm2ouij7fdih4d1f584hc02mgu7.apps.googleusercontent.com"
+              data-context="signin" data-ux_mode="popup" data-callback="onSignIn" data-hd="stanford.edu"
+              data-auto_prompt="true" data-auto_prompt="false"></div>
+
+            <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline"
+              data-text="signin_with" data-size="large" data-logo_alignment="left"></div>
+          </div>
+        </div>
+        <div class="flex items-start space-x-4">
+          <div class="min-w-0 flex-1">
+            <form action="#">
+              <div class="flex items-center pt-2">
+                <div class="flex-shrink-0">
+                  <button type="button" id="submit"
+                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Submit</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+<script type="text/javascript" src="index.js" defer></script>
+
+</html>
