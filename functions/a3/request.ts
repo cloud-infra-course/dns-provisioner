@@ -12,7 +12,7 @@ interface Env {
 }
 
 interface RequestRecord {
-  userAgent: string
+  flag: string
   lastAccessed: Date
 }
 
@@ -63,11 +63,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const requestRecord = await context.env.REQUESTS_KV.get(sunet) || 'null'
   let record = JSON.parse(requestRecord) as RequestRecord
 
-  console.log(record)
-
   if (record === null) {
     record = {
-      userAgent: `CS40-Provisioner-Client (On Behalf Of ${sunet}, flag=${crypto.randomUUID()})`,
+      flag: crypto.randomUUID(),
       lastAccessed: new Date()
     }
   }
@@ -77,7 +75,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   await fetch(
     `https://yoctogram.${sunet}.infracourse.cloud/api/v1/this/is/a/really/long/path/that/should/error`, {
     headers: {
-      'User-Agent': record.userAgent,
+      'User-Agent': `CS40-Provisioner-Client (On Behalf Of ${sunet}, flag=${record.flag})`,
     }
   })
 
